@@ -113,8 +113,11 @@ class Ball extends GameObject {
         this.trail = [];
         this.death_start = -1;
         this.bounce_sound = new Audio('bounce.wav');
+        this.bounce_sound.volume = 0.3;
         this.death_sound = new Audio('death.wav');
+        this.death_sound.volume = 0.5;
         this.win_sound = new Audio('win.wav');
+        this.win_sound.volume = 0.5;
     }
 
     get BBox() {
@@ -135,11 +138,11 @@ class Ball extends GameObject {
     }
 
     click() {
-        let nspeed = this.nspeed;
         if (this.game.end)
             game = new Game(document.getElementById('canvas'));
         if (this.game.lives >= 0) {
-            game.ball.nspeed = nspeed + 7;
+            game.ball.nspeed = this.nspeed + 7;
+            game.score = this.game.score;
             game.ball.speed.y = game.ball.nspeed;
         }
     }
@@ -212,6 +215,7 @@ class Ball extends GameObject {
         if (this.collides(this.game.paddle)) {
             this.speed.x = this.nspeed * 0.7 * ((this.pos.x - this.game.paddle.posx) / (this.game.paddle.width / 2));
             this.speed.y = -Math.sqrt(this.nspeed * this.nspeed - this.speed.x * this.speed.x);
+            this.speed.x += this.game.paddle.speed;
             this.pos.y = this.game.canvas.height - 125;
             this.game.paddle.blur_start = +new Date();
             this.bounce_sound.play();
@@ -273,6 +277,7 @@ class Brick extends GameObject {
         this.destroy_start = -1;
         this.height = 60;
         this.brick_sound = new Audio("brick.wav");
+        this.brick_sound.volume = 0.4;
     }
 
     get BBox() {
@@ -285,6 +290,7 @@ class Brick extends GameObject {
     }
 
     destroy() {
+        this.game.score++;
         this.brick_sound.play();
         this.destroy_start = +new Date();
         super.destroy();
@@ -298,7 +304,7 @@ class Brick extends GameObject {
             if (destroy_time >= 990)
                 super.destroy();
 
-            // ctx.globalAlpha = 1 - destroy_time / 1000;
+            ctx.globalAlpha = 1 - destroy_time / 1000;
             ctx.shadowColor = this.color;
             ctx.shadowBlur = destroy_time;
             this.height = 60 * Math.pow(1 - destroy_time / 1000, 7);
@@ -345,6 +351,7 @@ class Game {
         this.mousePos = {x: 0, y: 0};
 
         this.lives = 3;
+        this.score = 0;
 
         this.paddle = new Paddle(this);
 
@@ -354,6 +361,7 @@ class Game {
             this.bricks.push(new Brick(this, i * 195 + 120, 220, "#aa00ff"));
             this.bricks.push(new Brick(this, i * 195 + 120, 295, "#2962ff"));
             this.bricks.push(new Brick(this, i * 195 + 120, 370, "#00bfa5"));
+            this.bricks.push(new Brick(this, i * 195 + 120, 445, "#aeea00"));
         }
 
         this.ball = new Ball(this);
@@ -399,22 +407,27 @@ class Game {
         this.ctx.fillStyle = '#212121';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // render lives
-        this.ctx.fillStyle = "#fafafa";
+        for (let obj of this.gameObjects) {
+            obj.update(this.ctx, delta);
+        }
+
+        // render ui
+        if (!this.end)
+            this.ctx.fillStyle = "#fafafa";
         for (let i = 0; i < this.lives; i++) {
             this.ctx.beginPath();
             this.ctx.arc(60 + i * 60, 60, 20, 0, Math.PI * 2);
             this.ctx.fill();
         }
+
         this.ctx.textAlign="center";
         this.ctx.font = "45px FontAwesome";
         for (let i = 0; i < (this.ball.nspeed - 20) / 7; i++) {
             this.ctx.fillText('\uF061', this.canvas.width - 60 - i * 60, 75);
         }
 
-        for (let obj of this.gameObjects) {
-            obj.update(this.ctx, delta);
-        }
+        this.ctx.font = "45px cliche";
+        this.ctx.fillText(this.score, this.canvas.width / 2, 75);
 
         window.requestAnimationFrame(() => {this.render()});        
     }
