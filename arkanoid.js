@@ -82,9 +82,9 @@ class Paddle extends GameObject {
 
     update(ctx, delta) {
         this.speed *= 0.9;
-        if (this.game.pressed["ArrowLeft"])
+        if (this.game.pressed["ArrowLeft"] || this.game.pressed["a"])
             this.speed -= delta / 5;
-        else if (this.game.pressed["ArrowRight"])
+        else if (this.game.pressed["ArrowRight"] || this.game.pressed["d"])
             this.speed += delta / 5;
         this.posx = Math.max(this.width / 2, Math.min(this.game.canvas.width - this.width / 2, this.posx + this.speed));
 
