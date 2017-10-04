@@ -14,11 +14,11 @@ class GameObject {
     destroy() {
         this.game.remove(this)
     }
-    
+
     get BBox() {
         return null;
     }
-    
+
     contains(pos) {
         if (this.BBox === null)
             return false;
@@ -144,6 +144,7 @@ class Ball extends GameObject {
             game.ball.nspeed = this.nspeed + 7;
             game.score = this.game.score;
             game.ball.speed.y = game.ball.nspeed;
+            game.lives += this.game.lives;
         }
     }
 
@@ -429,7 +430,7 @@ class Game {
         this.ctx.font = "45px cliche";
         this.ctx.fillText(this.score, this.canvas.width / 2, 75);
 
-        window.requestAnimationFrame(() => {this.render()});        
+        window.requestAnimationFrame(() => {this.render()});
     }
 }
 
